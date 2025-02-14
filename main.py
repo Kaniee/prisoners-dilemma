@@ -1,107 +1,9 @@
-import docker
-import pandas as pd
-from typing import List, Tuple
+from typing import List
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-
-# Scoring constants
-BOTH_COOPERATE = (3, 3)
-BOTH_DEFECT = (1, 1)
-COOPERATE_DEFECT = (0, 5)
-DEFECT_COOPERATE = (5, 0)
-
-class Strategy:
-    def __init__(self, image_name: str):
-        self.image_name = image_name
-        self.client = docker.from_env()
-        self.container = None
-
-    async def start(self):
-        self.container = self.client.containers.run(
-            self.image_name,
-            detach=True,
-            stdin_open=True,
-            stdout=True
-        )
-
-    async def get_move(self, opponent_last_move: str = None) -> str:
-        if opponent_last_move:
-            self.container.exec_run(f"echo {opponent_last_move}", stdin=True)
-        
-        output = self.container.logs().decode().strip()
-        if not output:
-            print(f"Warning: No output returned from {self.image_name}, defaulting to 'C'")
-            return 'C'
-        print(f"{self.image_name} played: {output}")
-        return output[-1]  # Get last character (C or D)
-
-    async def cleanup(self):
-        if self.container:
-            self.container.stop()
-            self.container.remove()
-
-class Tournament:
-    def __init__(self, strategies: List[str]):
-        self.strategies = {name: Strategy(name) for name in strategies}
-        self.results = pd.DataFrame(0, 
-                                  index=strategies,
-                                  columns=strategies)
-        self.game_history = {}
-
-    async def play_game(self, strategy1: Strategy, strategy2: Strategy, 
-                       rounds: int = 200) -> Tuple[int, int]:
-        moves1, moves2 = [], []
-        score1, score2 = 0, 0
-
-        await strategy1.start()
-        await strategy2.start()
-
-        for _ in range(rounds):
-            move1 = await strategy1.get_move(moves2[-1] if moves2 else None)
-            move2 = await strategy2.get_move(moves1[-1] if moves1 else None)
-
-            moves1.append(move1)
-            moves2.append(move2)
-
-            # Calculate scores
-            if move1 == 'C' and move2 == 'C':
-                s1, s2 = BOTH_COOPERATE
-            elif move1 == 'D' and move2 == 'D':
-                s1, s2 = BOTH_DEFECT
-            elif move1 == 'C' and move2 == 'D':
-                s1, s2 = COOPERATE_DEFECT
-            else:  # D, C
-                s1, s2 = DEFECT_COOPERATE
-
-            score1 += s1
-            score2 += s2
-
-        await strategy1.cleanup()
-        await strategy2.cleanup()
-
-        return score1, score2, moves1, moves2
-
-    async def run_tournament(self, rounds_per_match: int = 200):
-        for name1, strategy1 in self.strategies.items():
-            for name2, strategy2 in self.strategies.items():
-                if name1 != name2:
-                    print(f"Running {name1} vs {name2}")
-                    score1, score2, moves1, moves2 = await self.play_game(
-                        strategy1, strategy2, rounds_per_match
-                    )
-                    
-                    self.results.loc[name1, name2] = score1
-                    self.results.loc[name2, name1] = score2
-                    
-                    # Store game history
-                    game_id = f"{name1}_vs_{name2}"
-                    self.game_history[game_id] = {
-                        "moves1": moves1,
-                        "moves2": moves2,
-                        "score1": score1,
-                        "score2": score2
-                    }
+from sqlalchemy.orm import Session
+from lib import SessionLocal, TournamentRunner, Move, TournamentParticipant
 
 # FastAPI server
 app = FastAPI()
@@ -111,24 +13,33 @@ tournament = None
 @app.post("/start_tournament")
 async def start_tournament(strategy_images: List[str]):
     global tournament
-    tournament = Tournament(strategy_images)
-    await tournament.run_tournament()
+    tournament = TournamentRunner(strategy_images)
+    await tournament.run()
     return {"status": "Tournament completed"}
 
 @app.get("/tournament_results")
 async def get_results():
     if tournament is None:
         return {"error": "No tournament has been run"}
+    # Fetch results from the database
+    db: Session = SessionLocal()
+    results = db.query(TournamentParticipant).all()
     return {
-        "results": tournament.results.to_dict(),
-        "total_scores": tournament.results.sum().to_dict()
+        "results": {f"{r.tournament_id}_{r.strategy_id}": r.total_score for r in results},
+        "total_scores": {r.strategy_id: r.total_score for r in results}
     }
 
 @app.get("/game_history/{game_id}")
-async def get_game_history(game_id: str):
-    if tournament is None or game_id not in tournament.game_history:
+async def get_game_history(game_id: int):
+    if tournament is None:
         return {"error": "Game not found"}
-    return tournament.game_history[game_id]
+    # Fetch game history from the database
+    db: Session = SessionLocal()
+    moves = db.query(Move).filter(Move.game_id == game_id).all()
+    return {
+        "moves1": [move.strategy1_move.value for move in moves],
+        "moves2": [move.strategy2_move.value for move in moves]
+    }
 
 # Serve frontend
 app.mount("/static", StaticFiles(directory="static"), name="static")

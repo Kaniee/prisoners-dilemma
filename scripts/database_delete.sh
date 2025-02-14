@@ -13,7 +13,7 @@ if [ "$DB_EXISTS" != "1" ]; then
     echo "Database '$DB_NAME' does not exist. Nothing to delete."
 else
     echo "Dropping database '$DB_NAME'..."
-    sudo -u postgres psql -c "DROP DATABASE $DB_NAME;"
+    sudo -u postgres psql -c "DROP DATABASE $DB_NAME WITH (FORCE);"
 fi
 
 # Check if the user exists and drop the user

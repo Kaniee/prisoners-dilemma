@@ -30,7 +30,7 @@ else
 
     # Apply the schema
     echo "Applying database schema..."
-    PGPASSWORD=$DB_PASSWORD psql -h localhost -U $DB_USER -d $DB_NAME -f schema.sql
+#     PGPASSWORD=$DB_PASSWORD psql -h localhost -U $DB_USER -d $DB_NAME -f schema.sql
 fi
 
 echo "Database setup complete."
