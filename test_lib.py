@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import pytest_asyncio
 from lib import (
-    TournamentRunner, StrategyRunner, Tournament, Game,
+    TournamentRunner, StrategyRunner, Tournament, Match,
 )
 
 @pytest.fixture
@@ -99,7 +99,7 @@ async def test_run_tournament(mock_docker: Mock, mock_db_session: Mock) -> None:
     # Mock database operations
     mock_db_session.refresh = Mock(side_effect=[
         Tournament(id=1, rounds_per_match=200),
-        Game(id=1, tournament_id=1, strategy1_id=1, strategy2_id=2)
+        Match(id=1, tournament_id=1, strategy1_id=1, strategy2_id=2)
     ])
 
     await manager.run(rounds_per_match=2)

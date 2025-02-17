@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
-from lib import SessionLocal, Strategy, Tournament, Game, Move, MoveType
+from lib import Session, Strategy, Tournament, Match, Turn, MoveType
 
 def insert_test_data():
-    db: Session = SessionLocal()
+    db: Session = Session()
 
     # Create strategies
 strategy1 = Strategy(name="Tit for Tat", docker_image="pd-tit-for-tat")
@@ -20,7 +20,7 @@ db.commit()
 db.refresh(tournament)
 
 # Create game
-game = Game(
+game = Match(
     tournament_id=tournament.id,
     strategy1_id=strategy1.id,
     strategy2_id=strategy2.id,
@@ -33,9 +33,9 @@ db.refresh(game)
 
 # Create moves
 moves = [
-    Move(game_id=game.id, round_number=1, strategy1_move=MoveType.C, strategy2_move=MoveType.D),
-    Move(game_id=game.id, round_number=2, strategy1_move=MoveType.D, strategy2_move=MoveType.D),
-    Move(game_id=game.id, round_number=3, strategy1_move=MoveType.C, strategy2_move=MoveType.C),
+    Turn(game_id=game.id, round_number=1, strategy1_move=MoveType.C, strategy2_move=MoveType.D),
+    Turn(game_id=game.id, round_number=2, strategy1_move=MoveType.D, strategy2_move=MoveType.D),
+    Turn(game_id=game.id, round_number=3, strategy1_move=MoveType.C, strategy2_move=MoveType.C),
     # Add more moves as needed
 ]
 db.add_all(moves)

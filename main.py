@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-from lib import SessionLocal, TournamentRunner, Move, TournamentParticipant
+from lib import Session, TournamentRunner, Turn, TournamentParticipant
 
 # FastAPI server
 app = FastAPI()
@@ -22,7 +22,7 @@ async def get_results():
     if tournament is None:
         return {"error": "No tournament has been run"}
     # Fetch results from the database
-    db: Session = SessionLocal()
+    db: Session = Session()
     results = db.query(TournamentParticipant).all()
     return {
         "results": {f"{r.tournament_id}_{r.strategy_id}": r.total_score for r in results},
@@ -34,8 +34,8 @@ async def get_game_history(game_id: int):
     if tournament is None:
         return {"error": "Game not found"}
     # Fetch game history from the database
-    db: Session = SessionLocal()
-    moves = db.query(Move).filter(Move.game_id == game_id).all()
+    db: Session = Session()
+    moves = db.query(Turn).filter(Turn.match_id == game_id).all()
     return {
         "moves1": [move.strategy1_move.value for move in moves],
         "moves2": [move.strategy2_move.value for move in moves]
