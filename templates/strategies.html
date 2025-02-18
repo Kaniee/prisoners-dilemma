@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Strategies</h1>
+
+<div class="strategies-list">
+    {% for strategy in strategies %}
+    <div class="strategy-card">
+        <h3>{{ strategy.name }}</h3>
+        <p>Docker Image: {{ strategy.docker_image }}</p>
+        <button hx-delete="/strategies/{{ strategy.id }}"
+                hx-confirm="Are you sure you want to delete this strategy?">
+            Delete
+        </button>
+        <button onclick="showRenameForm('{{ strategy.id }}')">Rename</button>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="add-strategy-form">
+    <h2>Add New Strategy</h2>
+    <form hx-post="/strategies/add" hx-swap="outerHTML">
+        <input type="text" name="name" placeholder="Strategy Name" required>
+        <input type="text" name="docker_image" placeholder="Docker Image" required>
+        <button type="submit">Add Strategy</button>
+    </form>
+</div>
+{% endblock %}

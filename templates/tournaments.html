@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Tournaments</h1>
+
+<div class="tournaments-list">
+    {% for tournament in tournaments %}
+    <div class="tournament-card">
+        <h3>Tournament #{{ tournament.id }}</h3>
+        <p>Status: {{ tournament.status }}</p>
+        <p>Started: {{ tournament.start_time }}</p>
+        <a href="/tournaments/{{ tournament.id }}" class="button">View Details</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

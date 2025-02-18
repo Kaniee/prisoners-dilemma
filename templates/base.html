@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tournament Visualization</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+    <nav>
+        <a href="/strategies">Strategies</a>
+        <a href="/tournaments">Tournaments</a>
+    </nav>
+    {% block content %}{% endblock %}
+</body>
+</html>

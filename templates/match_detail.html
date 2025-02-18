@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Match #{{ match.id }}</h1>
+
+<div class="match-info">
+    <p>Strategy 1: {{ strategy1.name }}</p>
+    <p>Strategy 2: {{ strategy2.name }}</p>
+    <p>Status: {{ match.status }}</p>
+</div>
+
+<div class="turns-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Turn</th>
+                <th>Strategy 1 Move</th>
+                <th>Strategy 2 Move</th>
+                <th>Strategy 1 Score</th>
+                <th>Strategy 2 Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for turn_number in range(turns|length // 2) %}
+            <tr>
+                <td>{{ turn_number }}</td>
+                <td>{{ turns[turn_number*2].move }}</td>
+                <td>{{ turns[turn_number*2 + 1].move }}</td>
+                <td>{{ turns[turn_number*2].score }}</td>
+                <td>{{ turns[turn_number*2 + 1].score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
