@@ -21,7 +21,6 @@ from sqlalchemy.orm import (
     sessionmaker,
     DeclarativeBase,
     relationship,
-    joinedload,
     mapped_column,
     Mapped,
 )
@@ -68,11 +67,6 @@ class Tournament(Base):
     # Relationship with Strategy
     strategies = relationship("Strategy", secondary=tournament_strategies)
 
-    def __init__(self, strategies: list["Strategy"], rounds_count: int):
-        self.rounds_count = rounds_count
-        self.strategies = strategies
-
-
 class Strategy(Base):
     __tablename__ = "strategies"
 
@@ -108,18 +102,7 @@ class Match(Base):
     end_time = mapped_column(TIMESTAMP)
     status = mapped_column(String(20), nullable=False, default="in_progress")
 
-    # Relationships
-    round = relationship("Round", foreign_keys=[round_id])
-    strategy1 = relationship("Strategy", foreign_keys=[strategy1_id])
-    strategy2 = relationship("Strategy", foreign_keys=[strategy2_id])
-
     __table_args__ = (UniqueConstraint("round_id", "strategy1_id", "strategy2_id"),)
-
-    def __init__(self, round: Round, strategy1: Strategy, strategy2: Strategy):
-        self.round = round
-        self.strategy1 = strategy1
-        self.strategy2 = strategy2
-
 
 class Turn(Base):
     __tablename__ = "turns"
@@ -141,37 +124,41 @@ Base.metadata.create_all(bind=engine)
 
 
 class TournamentRunner:
-    def __init__(self, strategies: list[Strategy], rounds_count: int):
+    def __init__(self, strategy_ids: list[int], rounds_count: int):
         with Session.begin() as session:
+            # Make sure strategies are attached to the session
+            strategies = session.query(Strategy).filter(Strategy.id.in_(strategy_ids)).all()
             tournament = Tournament(rounds_count=rounds_count, strategies=strategies)
             session.add(tournament)
             session.flush()
-            self.tournament_id = tournament.id
+            self.tournament_id: int = tournament.id
 
     async def run(self):
         with Session() as session:
             tournament = session.get(Tournament, self.tournament_id)
             assert tournament is not None
             rounds_count = tournament.rounds_count
+            # Access the attached strategies
+            tournament_strategies = tournament.strategies
         for round_number in range(rounds_count):
             turns_count = 200
-            with Session() as session:
-                round = Round(
+            with Session.begin() as session:
+                round_obj = Round(
                     tournament_id=tournament.id,
                     round_number=round_number,
                     turns_count=turns_count,
                 )
-                session.add(round)
-            await self.run_round(round)
+                session.add(round_obj)
+                session.flush()
+                current_round_id = round_obj.id
+            await self.run_round(current_round_id, tournament_strategies)
 
-    async def run_round(self, round: Round):
-        with Session() as session:
-            tournament = session.get(Tournament, self.tournament_id)
-            assert tournament is not None
-            strategies = tournament.strategies
+    async def run_round(self, round_id: int, strategies: list[Strategy]):
         match_runners: list[MatchRunner] = []
-        for strategy1, strategy2 in combinations_with_replacement(strategies, 2):
-            match_runner = MatchRunner(round, strategy1, strategy2)
+        # Use combinations to generate all pairs (with replacement if needed)
+        for strategy_1, strategy_2 in combinations_with_replacement(strategies, 2):
+            # Ensure you're passing the correct strategy IDs
+            match_runner = MatchRunner(round_id, strategy_1.id, strategy_2.id)
             match_runners.append(match_runner)
 
         for match_runner in match_runners:
@@ -188,25 +175,30 @@ class MatchRunner:
 
     OTHER_SIDE = {Side.strategy1: Side.strategy2, Side.strategy2: Side.strategy1}
 
-    def __init__(self, round: Round, strategy1: Strategy, strategy2: Strategy):
+    def __init__(self, round_id: int, strategy_1_id: int, strategy_2_id: int):
         with Session.begin() as session:
+            # Merge the round and strategies to attach them to the current session
             match = Match(
-                # round, session.merge(strategy1), session.merge(strategy2)
-                round,
-                strategy1,
-                strategy2,
+                round_id=round_id,
+                strategy1_id = strategy_1_id,
+                strategy2_id = strategy_2_id
             )
             session.add(match)
             session.flush()
             self.match_id = match.id
-        self.strategy_runners = {
-            Side.strategy1: StrategyRunner(
-                strategy1.docker_image, f"{self.match_id}_1"
-            ),
-            Side.strategy2: StrategyRunner(
-                strategy2.docker_image, f"{self.match_id}_2"
-            ),
-        }
+
+            strategy_1 = session.get(Strategy, strategy_1_id)
+            assert strategy_1 is not None
+            strategy_2 = session.get(Strategy, strategy_2_id)
+            assert strategy_2 is not None
+            self.strategy_runners = {
+                Side.strategy1: StrategyRunner(
+                    strategy_1.docker_image, f"{self.match_id}_1"
+                ),
+                Side.strategy2: StrategyRunner(
+                    strategy_2.docker_image, f"{self.match_id}_2"
+                ),
+            }
         self.last_moves: Mapping[Side, MoveType | None] = {
             Side.strategy1: None,
             Side.strategy2: None,
