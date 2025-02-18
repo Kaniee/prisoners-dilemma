@@ -29,7 +29,7 @@ else
     sudo -u postgres psql -c "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 
     # Apply the schema
-    echo "Applying database schema..."
+#     echo "Applying database schema..."
 #     PGPASSWORD=$DB_PASSWORD psql -h localhost -U $DB_USER -d $DB_NAME -f schema.sql
 fi
 
