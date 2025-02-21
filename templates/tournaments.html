@@ -1,16 +1,189 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Tournaments</h1>
+<div class="tournaments-container">
+    <h1>Tournaments</h1>
 
-<div class="tournaments-list">
-    {% for tournament in tournaments %}
-    <div class="tournament-card">
-        <h3>Tournament #{{ tournament.id }}</h3>
-        <p>Status: {{ tournament.status }}</p>
-        <p>Started: {{ tournament.start_time }}</p>
-        <a href="/tournaments/{{ tournament.id }}" class="button">View Details</a>
+    <button id="openModalBtn" class="open-modal-btn">Start Tournament</button>
+
+    <div id="tournamentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Start a New Tournament</h2>
+                <button class="close">&times;</button>
+            </div>
+            <form method="POST" action="/tournaments/start">
+                <div class="form-group">
+                    <label for="strategies">Select Strategies:</label>
+                    <select name="strategy_ids[]" id="strategies" multiple required>
+                        {% for strategy in strategies %}
+                        <option value="{{ strategy.id }}">{{ strategy.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="rounds_count">Number of Rounds:</label>
+                    <input type="number" name="rounds_count" id="rounds_count" min="1" required>
+                </div>
+
+                <button type="submit" class="start-btn">Start Tournament</button>
+            </form>
+        </div>
     </div>
-    {% endfor %}
+
+    <div class="tournaments-list">
+        {% for tournament in tournaments %}
+        <div class="tournament-card">
+            <h3>Tournament #{{ tournament.id }}</h3>
+            <p><strong>Status:</strong> {{ tournament.status }}</p>
+            <p><strong>Started:</strong> {{ tournament.start_time }}</p>
+            <a href="/tournaments/{{ tournament.id }}" class="view-details-btn">View Details</a>
+        </div>
+        {% endfor %}
+    </div>
 </div>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .close {
+        font-size: 1.5rem;
+        color: #718096;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .close:hover {
+        color: #2d3748;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        text-align: left;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #4a5568;
+    }
+
+    select, input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        font-size: 1rem;
+        margin-top: 0.25rem;
+    }
+
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .start-btn {
+        background: #48bb78;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        width: 100%;
+    }
+
+    .start-btn:hover {
+        background: #38a169;
+    }
+
+    .open-modal-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        background: #4299e1;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+    }
+
+    .open-modal-btn:hover {
+        background: #3182ce;
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const modal = document.getElementById("tournamentModal");
+        const openBtn = document.getElementById("openModalBtn");
+        const closeBtn = document.querySelector(".close");
+
+        // Initialize Select2
+        $('#strategies').select2({
+            placeholder: "Choose strategies...",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#tournamentModal')
+        });
+
+        openBtn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+    });
+</script>
 {% endblock %}

@@ -19,7 +19,7 @@ class MatchRunner:
             strategy2_id=strategy_2_id
         )
         session.add(match)
-        session.flush()
+        session.commit()
         self.match_id = match.id
 
         strategy_1 = session.get(Strategy, strategy_1_id)
@@ -35,14 +35,13 @@ class MatchRunner:
             Side.strategy1: None,
             Side.strategy2: None,
         }
-        self.session = session
 
-    async def run(self, turns_count: int):
+    async def run(self, turns_count: int, session: Session):
         for turn_number in range(turns_count):
-            await self.run_turn(turn_number)
+            await self.run_turn(turn_number, session)
         await self.cleanup()
 
-    async def run_turn(self, turn_number: int):
+    async def run_turn(self, turn_number: int, session: Session):
         moves: dict[Side, MoveType] = {}
         for side, strategy_runner in self.strategy_runners.items():
             other_side = self.OTHER_SIDE[side]
@@ -63,8 +62,8 @@ class MatchRunner:
                 move=move,
                 score=score,
             )
-            self.session.add(turn)
-        
+            session.add(turn)
+        session.commit()
         self.last_moves = moves
 
     async def cleanup(self):

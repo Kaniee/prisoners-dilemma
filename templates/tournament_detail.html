@@ -1,47 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Tournament #{{ tournament.id }}</h1>
-
-<div class="round-selector">
-    <select onchange="window.location.href=this.value">
-        <option value="/tournaments/{{ tournament.id }}">All Rounds</option>
-        {% for i in range(tournament.rounds_count) %}
-        <option value="/tournaments/{{ tournament.id }}?round_number={{ i }}"
-                {% if round_number == i %}selected{% endif %}>
-            Round {{ i }}
-        </option>
-        {% endfor %}
-    </select>
-</div>
-
-<div class="results-matrix">
-    <table>
-        <thead>
-            <tr>
-                <th></th>
-                {% for strategy in tournament.strategies %}
-                <th>{{ strategy.name }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for strategy1 in tournament.strategies %}
-            <tr>
-                <th>{{ strategy1.name }}</th>
-                {% for strategy2 in tournament.strategies %}
-                <td>
-                    {% set key = (strategy1.id, strategy2.id) %}
-                    {% if key in results %}
-                        {{ (results[key].total_score / results[key].matches) | round(2) }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                {% endfor %}
-            </tr>
+<div class="tournament-detail">
+    <h1>Tournament #{{ tournament.id }}</h1>
+    <div class="round-selector">
+        <label for="round-select">Select Round:</label>
+        <select id="round-select" onchange="window.location.href=this.value">
+            <option value="/tournaments/{{ tournament.id }}">All Rounds</option>
+            {% for i in range(tournament.rounds_count) %}
+            <option value="/tournaments/{{ tournament.id }}?round_number={{ i }}"
+                    {% if round_number == i %}selected{% endif %}>
+                Round {{ i }}
+            </option>
             {% endfor %}
-        </tbody>
-    </table>
+        </select>
+    </div>
+    <div class="results-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Strategy</th>
+                    {% for strategy in tournament.strategies|reverse %}
+                    <th>{{ strategy.name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for strategy1 in tournament.strategies %}
+                <tr>
+                    <th>{{ strategy1.name }}</th>
+                    {% for strategy2 in tournament.strategies|reverse %}
+                    <td>
+                        {% set key = (strategy1.id, strategy2.id) %}
+                        {% if key in results %}
+                            <a href="/matches/{{ results[key].match_id }}">
+                                {{ results[key].strategy1_result }} / {{ results[key].strategy2_result }}
+                            </a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
