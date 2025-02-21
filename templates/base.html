@@ -3,13 +3,19 @@
 <head>
     <title>Tournament Visualization</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 <body>
     <nav>
-        <a href="/strategies">Strategies</a>
-        <a href="/tournaments">Tournaments</a>
+        <div class="nav-container">
+            <div class="nav-links">
+                <a href="/tournaments">Tournaments</a>
+                <a href="/strategies">Strategies</a>
+            </div>
+        </div>
     </nav>
-    {% block content %}{% endblock %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
 </body>
 </html>
