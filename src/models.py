@@ -5,6 +5,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, relationship, mapped_column, Mapped
 
+import database
+
 class Base(DeclarativeBase):
     pass
 
@@ -77,3 +79,5 @@ class Turn(Base):
     created_at = mapped_column(TIMESTAMP, server_default=func.now())
 
     __table_args__ = (UniqueConstraint("match_id", "turn_number", "side"),)
+
+Base.metadata.create_all(bind=database.engine)
