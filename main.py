@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from routers import strategies, tournaments, matches
+
 # from pydantic import BaseModel
 # from datetime import datetime
 # from game_engine import (
@@ -23,6 +24,7 @@ templates = Jinja2Templates(directory="templates")
 app.include_router(strategies.router)
 app.include_router(tournaments.router)
 app.include_router(matches.router)
+
 
 @app.get("/")
 async def root(request: Request):
