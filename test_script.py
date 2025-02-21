@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from lib import Session, Strategy, Tournament, Match, Turn, MoveType
+from game_engine import Session, Strategy, Tournament, Match, Turn, MoveType
 
 def insert_test_data():
     db: Session = Session()

@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import Mock, patch
 
 import pytest_asyncio
-from lib import (
+from game_engine import (
     TournamentRunner, StrategyRunner, Tournament, Match,
 )
 
