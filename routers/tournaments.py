@@ -1,5 +1,5 @@
 from operator import itemgetter
-from fastapi import APIRouter, Form, HTTPException, Request, Depends
+from fastapi import APIRouter, BackgroundTasks, Form, HTTPException, Request, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import case, func
@@ -25,6 +25,7 @@ async def list_tournaments(request: Request, db: Session = Depends(get_db)):
 @router.post("/start")
 async def start_tournament(
     request: Request,
+    background_tasks: BackgroundTasks,
     strategy_ids: list[int] = Form(..., alias="strategy_ids[]"),
     rounds_count: int = Form(...),
     db: Session = Depends(get_db),
@@ -33,9 +34,13 @@ async def start_tournament(
     tournament_runner = TournamentRunner(
         strategy_ids=strategy_ids, rounds_count=rounds_count, session=db
     )
-    await tournament_runner.run(db)
+    # Add the tournament execution to background tasks
+    background_tasks.add_task(
+        tournament_runner.run,
+        db
+    )
 
-    return RedirectResponse(url="/tournaments", status_code=303)
+    return RedirectResponse(url=f"/tournaments/{tournament_runner.tournament_id}", status_code=303)
 
 
 @router.get("/{tournament_id}")
