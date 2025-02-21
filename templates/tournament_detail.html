@@ -3,6 +3,40 @@
 {% block content %}
 <div class="tournament-detail">
     <h1>Tournament #{{ tournament.id }}</h1>
+
+    <!-- Rankings Table -->
+    <div class="rankings-table mb-8">
+        <h2>Strategy Rankings</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Strategy</th>
+                    <th>Total Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for strategy_id, score in strategy_scores.items() %}
+                <tr>
+                    <td>
+                        {% if loop.index == 1 %}
+                            🥇
+                        {% elif loop.index == 2 %}
+                            🥈
+                        {% elif loop.index == 3 %}
+                            🥉
+                        {% else %}
+                            {{ loop.index }}.
+                        {% endif %}
+                    </td>
+                    <td>{{ strategy_lookup[strategy_id].name }}</td>
+                    <td>{{ score }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
     <div class="round-selector">
         <label for="round-select">Select Round:</label>
         <select id="round-select" onchange="window.location.href=this.value">
@@ -15,6 +49,7 @@
             {% endfor %}
         </select>
     </div>
+
     <div class="results-table">
         <table>
             <thead>
