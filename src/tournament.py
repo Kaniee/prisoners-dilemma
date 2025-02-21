@@ -1,7 +1,10 @@
 from itertools import combinations_with_replacement
 from sqlalchemy.orm import Session
+import asyncio
+from loguru import logger
 from .models import Tournament, Round, Strategy
 from .match import MatchRunner
+
 
 class TournamentRunner:
     def __init__(self, strategy_ids: list[int], rounds_count: int, session: Session):
@@ -16,7 +19,7 @@ class TournamentRunner:
         assert tournament is not None
         rounds_count = tournament.rounds_count
         tournament_strategies = tournament.strategies
-        
+
         for round_number in range(rounds_count):
             turns_count = 200
             round_obj = Round(
@@ -26,13 +29,41 @@ class TournamentRunner:
             )
             session.add(round_obj)
             session.commit()
-            await self.run_round(round_obj.id, tournament_strategies, turns_count, session)
+            await self.run_round(
+                round_obj.id, tournament_strategies, turns_count, session
+            )
 
-    async def run_round(self, round_id: int, strategies: list[Strategy], turns_count: int, session: Session):
-        match_runners: list[MatchRunner] = []
-        for strategy_1, strategy_2 in combinations_with_replacement(strategies, 2):
-            match_runner = MatchRunner(round_id, strategy_1.id, strategy_2.id, session)
-            match_runners.append(match_runner)
+    async def run_round(
+        self,
+        round_id: int,
+        strategies: list[Strategy],
+        turns_count: int,
+        session: Session,
+    ):
+        match_pairs = combinations_with_replacement(strategies, 2)
+        create_tasks = [
+            asyncio.create_task(
+                MatchRunner.create(round_id, strategy_1.id, strategy_2.id, session)
+            )
+            for strategy_1, strategy_2 in match_pairs
+        ]
+        match_runners = await asyncio.gather(*create_tasks)
 
-        for match_runner in match_runners:
-            await match_runner.run(turns_count, session=session)
+        match_tasks: list[asyncio.Task[None]] = []
+        try:
+            # Run all matches in parallel
+            match_tasks = [
+                asyncio.create_task(runner.run(turns_count, session))
+                for runner in match_runners
+            ]
+            await asyncio.gather(*match_tasks)
+        except Exception as e:
+            logger.error(f"Error running round {round_id}: {str(e)}")
+            # Cancel any remaining tasks
+            for task in match_tasks:
+                if not task.done():
+                    task.cancel()
+            raise
+        finally:
+            for runner in match_runners:
+                runner.cleanup()
