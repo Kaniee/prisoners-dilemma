@@ -33,7 +33,7 @@
     </div>
 
     <div class="tournaments-list">
-        {% for tournament in tournaments %}
+        {% for tournament in tournaments|reverse %}
         <div class="tournament-card">
             <h3>Tournament #{{ tournament.id }}</h3>
             <p><strong>Status:</strong> {{ tournament.status }}</p>
