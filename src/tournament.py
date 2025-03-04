@@ -1,5 +1,6 @@
 from itertools import combinations_with_replacement
 from sqlalchemy.orm import Session
+import random
 import asyncio
 from loguru import logger
 from .models import Tournament, Round, Strategy
@@ -21,7 +22,7 @@ class TournamentRunner:
         tournament_strategies = tournament.strategies
 
         for round_number in range(rounds_count):
-            turns_count = 200
+            turns_count = round(random.gauss(200, 0))
             round_obj = Round(
                 tournament_id=tournament.id,
                 round_number=round_number,
