@@ -68,15 +68,23 @@
                     <td>
                         {% set key = (strategy1.id, strategy2.id) %}
                         {% if key in results %}
-                            <a href="/matches/{{ results[key].match_id }}">
+                            {% if results[key].match_id >= 0 %}
+                                <a href="/matches/{{ results[key].match_id }}">
+                                    {{ results[key].strategy1_result }} / {{ results[key].strategy2_result }}
+                                </a>
+                            {% else %}
                                 {{ results[key].strategy1_result }} / {{ results[key].strategy2_result }}
-                            </a>
+                            {% endif %}
                         {% else %}
                             {% set key = (strategy2.id, strategy1.id) %}
                             {% if key in results %}
-                                <a href="/matches/{{ results[key].match_id }}">
+                                {% if results[key].match_id >= 0 %}
+                                    <a href="/matches/{{ results[key].match_id }}">
+                                        {{ results[key].strategy2_result }} / {{ results[key].strategy1_result }}
+                                    </a>
+                                {% else %}
                                     {{ results[key].strategy2_result }} / {{ results[key].strategy1_result }}
-                                </a>
+                                {% endif %}
                             {% else %}
                                 -
                             {% endif %}

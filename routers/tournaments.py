@@ -102,11 +102,17 @@ async def tournament_detail(
         key = (strategy1_id, strategy2_id)
         strategy_scores[strategy1_id] += strategy1_score
         strategy_scores[strategy2_id] += strategy2_score
-        results[key] = {
-            "strategy1_result": strategy1_score,
-            "strategy2_result": strategy2_score,
-            "match_id": match_id,
-        }
+        if key not in results:
+            results[key] = {
+                "strategy1_result": strategy1_score,
+                "strategy2_result": strategy2_score,
+                "match_id": match_id,
+            }
+        else:
+            results_key = results[key]
+            results_key["strategy1_result"] += strategy1_score
+            results_key["strategy2_result"] += strategy1_score
+            results_key["match_id"] = -1
 
     strategy_scores = {
         id_: score
