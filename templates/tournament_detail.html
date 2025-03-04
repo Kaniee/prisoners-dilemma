@@ -72,7 +72,14 @@
                                 {{ results[key].strategy1_result }} / {{ results[key].strategy2_result }}
                             </a>
                         {% else %}
-                            -
+                            {% set key = (strategy2.id, strategy1.id) %}
+                            {% if key in results %}
+                                <a href="/matches/{{ results[key].match_id }}">
+                                    {{ results[key].strategy2_result }} / {{ results[key].strategy1_result }}
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
                         {% endif %}
                     </td>
                     {% endfor %}
