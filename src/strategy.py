@@ -15,16 +15,19 @@ from .models import MoveType
 REGISTRY = "localhost:5000"
 MISCOMMUNICATION_PROBABILITY = 0.0
 
+
 class StrategyRunner:
     TIMEOUT_SEC = 0.1
 
     @classmethod
     async def create(cls, image_name: str, container_name: str) -> Self:
         client = docker.from_env()
-        container = await asyncio.to_thread(client.images.pull,
+        container = await asyncio.to_thread(
+            client.images.pull,
             f"{REGISTRY}/{image_name}:2",
         )
-        container = await asyncio.to_thread(client.containers.run,
+        container = await asyncio.to_thread(
+            client.containers.run,
             f"{REGISTRY}/{image_name}:2",
             name=container_name,
             detach=True,
@@ -33,7 +36,9 @@ class StrategyRunner:
         )
         logger.debug(f"{container.name} | {image_name} | Started")
 
-        stdin_socket: SocketIO = container.attach_socket(params={"stdin": 1, "stream": 1})  # type: ignore
+        stdin_socket: SocketIO = container.attach_socket(  # type: ignore
+            params={"stdin": 1, "stream": 1}
+        )
 
         return cls(image_name, container, stdin_socket)  # type: ignore
 
@@ -54,11 +59,12 @@ class StrategyRunner:
         if opponent_previous_move is not None:
             move_to_print = opponent_previous_move.name
 
-            if move_to_print == MoveType.C.value and random.random() < MISCOMMUNICATION_PROBABILITY:
+            if (
+                move_to_print == MoveType.C.value
+                and random.random() < MISCOMMUNICATION_PROBABILITY
+            ):
                 move_to_print = MoveType.D.value
-            os.write(
-                self.stdin_socket.fileno(), f"{move_to_print}\n".encode()
-            )
+            os.write(self.stdin_socket.fileno(), f"{move_to_print}\n".encode())
             logger.debug(
                 f"{self.container.name} | {self.image_name} | Input: {move_to_print} ({opponent_previous_move.name})"
             )

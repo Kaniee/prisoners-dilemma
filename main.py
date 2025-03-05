@@ -12,6 +12,7 @@ app.include_router(strategies.router)
 app.include_router(tournaments.router)
 app.include_router(matches.router)
 
+
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("base.html", {"request": request})

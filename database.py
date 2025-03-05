@@ -5,6 +5,7 @@ DATABASE_URL = "postgresql://tournament_user:tournament_pass@localhost/tournamen
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 def get_db():
     db = SessionLocal()
     try:

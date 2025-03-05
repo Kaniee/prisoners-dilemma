@@ -35,12 +35,11 @@ async def start_tournament(
         strategy_ids=strategy_ids, rounds_count=rounds_count, session=db
     )
     # Add the tournament execution to background tasks
-    background_tasks.add_task(
-        tournament_runner.run,
-        db
-    )
+    background_tasks.add_task(tournament_runner.run, db)
 
-    return RedirectResponse(url=f"/tournaments/{tournament_runner.tournament_id}", status_code=303)
+    return RedirectResponse(
+        url=f"/tournaments/{tournament_runner.tournament_id}", status_code=303
+    )
 
 
 @router.get("/{tournament_id}")
