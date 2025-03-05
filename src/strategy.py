@@ -12,6 +12,7 @@ from loguru import logger
 from .models import MoveType
 
 
+REGISTRY = "localhost:5000"
 MISCOMMUNICATION_PROBABILITY = 0.0
 
 class StrategyRunner:
@@ -21,10 +22,10 @@ class StrategyRunner:
     async def create(cls, image_name: str, container_name: str) -> Self:
         client = docker.from_env()
         container = await asyncio.to_thread(client.images.pull,
-            image_name",
+            f"{REGISTRY}/{image_name}:2",
         )
         container = await asyncio.to_thread(client.containers.run,
-            image_name,
+            f"{REGISTRY}/{image_name}:2",
             name=container_name,
             detach=True,
             stdin_open=True,
