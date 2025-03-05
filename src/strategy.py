@@ -20,6 +20,9 @@ class StrategyRunner:
     @classmethod
     async def create(cls, image_name: str, container_name: str) -> Self:
         client = docker.from_env()
+        container = await asyncio.to_thread(client.images.pull,
+            image_name",
+        )
         container = await asyncio.to_thread(client.containers.run,
             image_name,
             name=container_name,
