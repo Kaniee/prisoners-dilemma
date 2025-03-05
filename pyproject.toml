@@ -3,23 +3,16 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pandas = "^2.2.3"
-fastapi = "^0.115.8"
-uvicorn = "^0.34.0"
 docker = "^7.1.0"
-asyncpg = "^0.30.0"
 asyncpg-stubs = "^0.30.0"
-sqlalchemy = "^2.0.38"
-psycopg2-binary = "^2.9.10"
 loguru = "^0.7.3"
-jinja2 = "^3.1.5"
-python-multipart = "^0.0.20"
+fastapi = {version = "^0.115.11", extras = ["standard"]}
+sqlalchemy = {version = "^2.0.38", extras = ["postgresql-psycopg2binary", "postgresql-asyncpg"]}
 
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 pytest-asyncio = "^0.25.3"
-ipython = "^8.32.0"
 ipykernel = "^6.29.5"
 
 [build-system]
