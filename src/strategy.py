@@ -1,5 +1,6 @@
 import asyncio
 import os
+import random
 import time
 from socket import SocketIO
 from typing import Self
@@ -10,6 +11,8 @@ import docker.models.containers
 from loguru import logger
 from .models import MoveType
 
+
+MISCOMMUNICATION_PROBABILITY = 0.0
 
 class StrategyRunner:
     TIMEOUT_SEC = 0.1
@@ -45,11 +48,15 @@ class StrategyRunner:
         self, opponent_previous_move: MoveType | None = None
     ) -> MoveType | None:
         if opponent_previous_move is not None:
+            move_to_print = opponent_previous_move.name
+
+            if move_to_print == MoveType.C.value and random.random() < MISCOMMUNICATION_PROBABILITY:
+                move_to_print = MoveType.D.value
             os.write(
-                self.stdin_socket.fileno(), f"{opponent_previous_move.name}\n".encode()
+                self.stdin_socket.fileno(), f"{move_to_print}\n".encode()
             )
             logger.debug(
-                f"{self.container.name} | {self.image_name} | Input: {opponent_previous_move.name}"
+                f"{self.container.name} | {self.image_name} | Input: {move_to_print} ({opponent_previous_move.name})"
             )
 
         start_time = time.time()
