@@ -1,16 +1,17 @@
 import enum
+
 from sqlalchemy import (
+    TIMESTAMP,
     Column,
-    Table,
-    UniqueConstraint,
+    Enum,
+    ForeignKey,
     Integer,
     String,
-    ForeignKey,
-    Enum,
-    TIMESTAMP,
+    Table,
+    UniqueConstraint,
     func,
 )
-from sqlalchemy.orm import DeclarativeBase, relationship, mapped_column, Mapped
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 import database
 

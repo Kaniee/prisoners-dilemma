@@ -1,8 +1,10 @@
-from typing import Mapping, Self
-from loguru import logger
 import asyncio
+from typing import Mapping, Self
+
+from loguru import logger
 from sqlalchemy.orm import Session
-from .models import Match, Turn, Side, MoveType, Strategy
+
+from .models import Match, MoveType, Side, Strategy, Turn
 from .strategy import StrategyRunner
 
 

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from src.models import Match, Side, Strategy, Turn
+
 from database import get_db
+from src.models import Match, Side, Strategy, Turn
 
 router = APIRouter(prefix="/matches")
 templates = Jinja2Templates(directory="templates")

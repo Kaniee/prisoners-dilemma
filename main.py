@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from routers import strategies, tournaments, matches
+
+from routers import matches, strategies, tournaments
 
 app = FastAPI(title="Tournament")
 

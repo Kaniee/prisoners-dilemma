@@ -1,11 +1,13 @@
 from operator import itemgetter
-from fastapi import APIRouter, BackgroundTasks, Form, HTTPException, Request, Depends
+
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import case, func
 from sqlalchemy.orm import Session
-from src.models import Round, Side, Strategy, Tournament, Match, Turn
+
 from database import get_db
+from src.models import Match, Round, Side, Strategy, Tournament, Turn
 from src.tournament import TournamentRunner
 
 router = APIRouter(prefix="/tournaments")

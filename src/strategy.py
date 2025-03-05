@@ -4,13 +4,14 @@ import random
 import time
 from socket import SocketIO
 from typing import Self
+
 import docker
 import docker.models
 import docker.models.configs
 import docker.models.containers
 from loguru import logger
-from .models import MoveType
 
+from .models import MoveType
 
 REGISTRY = "localhost:5000"
 MISCOMMUNICATION_PROBABILITY = 0.0

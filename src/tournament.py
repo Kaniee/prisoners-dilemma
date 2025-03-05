@@ -1,10 +1,12 @@
-from itertools import combinations_with_replacement
-from sqlalchemy.orm import Session
-import random
 import asyncio
+import random
+from itertools import combinations_with_replacement
+
 from loguru import logger
-from .models import Tournament, Round, Strategy
+from sqlalchemy.orm import Session
+
 from .match import MatchRunner
+from .models import Round, Strategy, Tournament
 
 
 class TournamentRunner:

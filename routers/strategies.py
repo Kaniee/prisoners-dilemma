@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Request, Form, Depends
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from src.models import Strategy
+
 from database import get_db
+from src.models import Strategy
 
 router = APIRouter(prefix="/strategies")
 templates = Jinja2Templates(directory="templates")
