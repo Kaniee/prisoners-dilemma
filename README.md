@@ -1,6 +1,19 @@
 # About
 This is toy project to host a tournament where different strategies (docker images) can compete in the prisoner's dilemma.
 
+# Usage
+Start the Docker registry, the PostgreSQL database and finally the FastAPI application
+```bash
+make registry
+make database
+make app
+```
+
+Add strategies using the cli
+```bash
+./scripts/strategy_cli.sh add <Strategy name> <docker image name>
+```
+
 # Status
 It lacks a couple of things:
 - Documentation
